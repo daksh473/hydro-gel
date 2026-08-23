@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Sample, Status, Assignee } from '../data';
+import { type Sample, type Status, type Assignee, STATUSES } from '../data';
 import { Filter, ArrowUpDown } from 'lucide-react';
 
 interface DataTableProps {
@@ -9,12 +9,11 @@ interface DataTableProps {
 }
 
 const TEAM: Assignee[] = ['Shubhashish', 'Daksh', 'Swayam Shree', 'Suman', 'Nuzail', 'Unassigned'];
-const STATUSES: Status[] = ['Not started', 'Mixing', 'Drying', 'I-V Testing', 'Done'];
 
 export function DataTable({ samples, onRowClick, onUpdateSample }: DataTableProps) {
   const [filterAssignee, setFilterAssignee] = useState<Assignee | 'All'>('All');
   const [filterStatus, setFilterStatus] = useState<Status | 'All'>('All');
-  const [sortBy, setSortBy] = useState<'slNo' | 'conductivity'>('slNo');
+  const [sortBy, setSortBy] = useState<'slNo' | 'conductivity' | 'status'>('slNo');
   
   let filtered = samples.filter(s => {
     if (filterAssignee !== 'All' && s.assignedTo !== filterAssignee) return false;
@@ -24,6 +23,7 @@ export function DataTable({ samples, onRowClick, onUpdateSample }: DataTableProp
 
   filtered.sort((a, b) => {
     if (sortBy === 'slNo') return a.slNo - b.slNo;
+    if (sortBy === 'status') return STATUSES.indexOf(a.status) - STATUSES.indexOf(b.status);
     if (sortBy === 'conductivity') {
       const cA = parseFloat(a.conductivity) || 0;
       const cB = parseFloat(b.conductivity) || 0;
@@ -33,7 +33,7 @@ export function DataTable({ samples, onRowClick, onUpdateSample }: DataTableProp
   });
 
   const getStatusClass = (status: Status) => {
-    return `status-pill status-${status.toLowerCase().replace(/\s+/g, '-')}`;
+    return `status-pill status-step-${STATUSES.indexOf(status)}`;
   };
 
   return (
@@ -59,8 +59,12 @@ export function DataTable({ samples, onRowClick, onUpdateSample }: DataTableProp
           </select>
         </div>
         <div className="sort-group">
-          <button className="btn btn-secondary" onClick={() => setSortBy(sortBy === 'slNo' ? 'conductivity' : 'slNo')} title={`Sort by ${sortBy === 'slNo' ? 'Conductivity' : 'Sl No'}`}>
-            <ArrowUpDown size={16} /> Sort: {sortBy === 'slNo' ? 'Sl No' : 'Conductivity'}
+          <button 
+            className="btn btn-secondary" 
+            onClick={() => setSortBy(sortBy === 'slNo' ? 'status' : sortBy === 'status' ? 'conductivity' : 'slNo')} 
+            title={`Sort by ${sortBy === 'slNo' ? 'Status' : sortBy === 'status' ? 'Conductivity' : 'Sl No'}`}
+          >
+            <ArrowUpDown size={16} /> Sort: {sortBy === 'slNo' ? 'Sl No' : sortBy === 'status' ? 'Status' : 'Conductivity'}
           </button>
         </div>
       </div>

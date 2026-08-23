@@ -1,4 +1,4 @@
-import type { Sample, Status, Assignee } from '../data';
+import { type Sample, type Assignee, STATUSES } from '../data';
 import { X, Save, Image as ImageIcon } from 'lucide-react';
 import { useState } from 'react';
 
@@ -9,7 +9,6 @@ interface SampleDetailModalProps {
 }
 
 const TEAM: Assignee[] = ['Shubhashish', 'Daksh', 'Swayam Shree', 'Suman', 'Nuzail', 'Unassigned'];
-const STATUSES: Status[] = ['Not started', 'Mixing', 'Drying', 'I-V Testing', 'Done'];
 
 export function SampleDetailModal({ sample, onClose, onUpdate }: SampleDetailModalProps) {
   const [localSample, setLocalSample] = useState<Sample>({ ...sample });

@@ -415,11 +415,14 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--bg-secondary);
 }
 
-.status-not-started { color: var(--status-not-started); }
-.status-mixing { color: var(--status-mixing); }
-.status-drying { color: var(--status-drying); }
-.status-i-v-testing { color: var(--status-testing); }
-.status-done { color: var(--status-done); }
+.status-step-0 { color: var(--status-not-started); background: rgba(134, 134, 139, 0.1); }
+.status-step-1 { color: var(--status-testing); background: rgba(14, 107, 92, 0.1); }
+.status-step-2 { color: var(--status-testing); background: rgba(14, 107, 92, 0.2); }
+.status-step-3 { color: var(--status-testing); background: rgba(14, 107, 92, 0.3); }
+.status-step-4 { color: var(--status-testing); background: rgba(14, 107, 92, 0.4); }
+.status-step-5 { color: var(--status-testing); background: rgba(14, 107, 92, 0.5); }
+.status-step-6 { color: var(--status-testing); background: rgba(14, 107, 92, 0.6); }
+.status-step-7 { color: #ffffff; background: var(--status-done); font-weight: 500; }
 
 /* Buttons */
 .btn {
