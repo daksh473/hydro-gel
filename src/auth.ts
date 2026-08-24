@@ -14,3 +14,15 @@ export const DEFAULT_AUTH: Record<string, string> = {
   suman: import.meta.env.VITE_AUTH_SUMAN || 'dbe91d66856dea848bba30997420ee4284367c2978bb082179dd4080c90a2b58',       // suman@123
   nuzail: import.meta.env.VITE_AUTH_NUZAIL || '53c2f95bc8d130ff77a054ec08b3fd9320437f817f0af46ca2342a6fbf4bf88e'      // nuzail@123
 };
+
+// Simple local mock for auth map since we removed Yjs for passwords
+export const getAuthHash = (username: string): string => {
+  const localOverrides = JSON.parse(localStorage.getItem('authOverrides') || '{}');
+  return localOverrides[username] || DEFAULT_AUTH[username];
+};
+
+export const setAuthHash = (username: string, hash: string) => {
+  const localOverrides = JSON.parse(localStorage.getItem('authOverrides') || '{}');
+  localOverrides[username] = hash;
+  localStorage.setItem('authOverrides', JSON.stringify(localOverrides));
+};

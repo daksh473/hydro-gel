@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { authMap } from '../store';
-import { hashPassword } from '../auth';
+import { hashPassword, getAuthHash } from '../auth';
 
 interface LoginProps {
   onLogin: (username: string) => void;
@@ -19,7 +18,7 @@ export function Login({ onLogin }: LoginProps) {
 
     try {
       const normalizedUser = username.trim().toLowerCase();
-      const expectedHash = authMap.get(normalizedUser);
+      const expectedHash = getAuthHash(normalizedUser);
 
       if (!expectedHash) {
         setError(true);

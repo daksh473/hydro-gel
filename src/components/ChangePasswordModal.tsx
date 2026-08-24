@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { authMap } from '../store';
-import { hashPassword } from '../auth';
+import { hashPassword, getAuthHash, setAuthHash } from '../auth';
 import { X, Save } from 'lucide-react';
 
 interface ChangePasswordModalProps {
@@ -21,7 +20,7 @@ export function ChangePasswordModal({ username, onClose }: ChangePasswordModalPr
 
     try {
       const currentHash = await hashPassword(currentPassword);
-      const expectedHash = authMap.get(username);
+      const expectedHash = getAuthHash(username);
 
       if (currentHash !== expectedHash) {
         setError('Current password is incorrect');
@@ -36,7 +35,7 @@ export function ChangePasswordModal({ username, onClose }: ChangePasswordModalPr
       }
 
       const newHash = await hashPassword(newPassword);
-      authMap.set(username, newHash);
+      setAuthHash(username, newHash);
       
       // Successfully changed
       onClose();

@@ -1,55 +1,83 @@
-import { useEffect, useState } from 'react';
-import { samplesMap, provider } from './store';
-import type { Sample, Assignee } from './data';
+import { useEffect, useState, useRef } from 'react';
+import { supabase } from './store';
+import { INITIAL_DATA, type Sample, type Assignee } from './data';
 import { Dashboard } from './components/Dashboard';
 import { DataTable } from './components/DataTable';
 import { ProtocolPanel } from './components/ProtocolPanel';
 import { SampleDetailModal } from './components/SampleDetailModal';
 import { Login } from './components/Login';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
-import { Activity, Users, LogOut, Key } from 'lucide-react';
+import { Activity, LogOut, Key } from 'lucide-react';
 import './index.css';
 
 function App() {
   const [samples, setSamples] = useState<Sample[]>([]);
-  const [synced, setSynced] = useState(false);
+  const [synced, setSynced] = useState(true);
   const [selectedSampleId, setSelectedSampleId] = useState<string | null>(null);
   const [showProtocol, setShowProtocol] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
-  const [connectedPeers, setConnectedPeers] = useState(0);
+
+  // We use a ref to avoid stale closures in the realtime subscription
+  const samplesRef = useRef<Sample[]>([]);
+  samplesRef.current = samples;
 
   // Authentication State
   const [currentUser, setCurrentUser] = useState<string | null>(() => sessionStorage.getItem('username'));
 
   useEffect(() => {
     // Initial load
-    const loadData = () => {
-      const data = Array.from(samplesMap.values());
-      data.sort((a, b) => a.slNo - b.slNo);
-      setSamples(data);
+    const loadData = async () => {
+      setSynced(false);
+      const { data, error } = await supabase.from('samples').select('*').order('slNo', { ascending: true });
+      
+      if (error) {
+        console.error('Error fetching samples:', error);
+        setSynced(true);
+        return;
+      }
+
+      if (data && data.length === 0) {
+        // Initialize with default 48 samples if table is empty
+        const { error: insertError } = await supabase.from('samples').insert(INITIAL_DATA);
+        if (!insertError) {
+          setSamples(INITIAL_DATA);
+        }
+      } else if (data) {
+        setSamples(data as Sample[]);
+      }
+      setSynced(true);
     };
 
-    loadData();
-
-    // Listen for changes
-    const observer = () => {
+    if (currentUser) {
       loadData();
-    };
 
-    samplesMap.observe(observer);
-    
-    provider.on('synced', (arg: { synced: boolean }) => {
-      setSynced(arg.synced);
-    });
+      // Listen for changes
+      const channel = supabase.channel('custom-all-channel')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'samples' },
+          (payload) => {
+            const updatedSample = payload.new as Sample;
+            setSamples(prev => {
+              const newSamples = [...prev];
+              const index = newSamples.findIndex(s => s.id === updatedSample.id);
+              if (index !== -1) {
+                newSamples[index] = updatedSample;
+              } else {
+                newSamples.push(updatedSample);
+                newSamples.sort((a, b) => a.slNo - b.slNo);
+              }
+              return newSamples;
+            });
+          }
+        )
+        .subscribe();
 
-    provider.awareness.on('change', () => {
-      setConnectedPeers(provider.awareness.getStates().size);
-    });
-
-    return () => {
-      samplesMap.unobserve(observer);
-    };
-  }, []);
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [currentUser]);
 
   const handleLogin = (username: string) => {
     sessionStorage.setItem('username', username);
@@ -61,9 +89,12 @@ function App() {
     setCurrentUser(null);
   };
 
-  const updateSample = (id: string, updates: Partial<Sample>) => {
-    const existing = samplesMap.get(id);
-    if (existing) {
+  const updateSample = async (id: string, updates: Partial<Sample>) => {
+    const existingIndex = samplesRef.current.findIndex(s => s.id === id);
+    if (existingIndex > -1) {
+      const existing = samplesRef.current[existingIndex];
+      const payload: Partial<Sample> = { ...updates, lastUpdatedBy: currentUser || '', lastUpdatedAt: Date.now() };
+      
       // Auto-assign to current user if it's currently unassigned and they make a change
       if (
         currentUser &&
@@ -73,11 +104,26 @@ function App() {
         // Map lowercase username to proper casing for Assignee if possible
         const properName = ['Shubhashish', 'Daksh', 'Swayam Shree', 'Suman', 'Nuzail'].find(n => n.toLowerCase().replace(/\s+/g, '') === currentUser) as Assignee;
         if (properName) {
-          updates.assignedTo = properName;
+          payload.assignedTo = properName;
         }
       }
-      
-      samplesMap.set(id, { ...existing, ...updates, lastUpdatedBy: currentUser || '', lastUpdatedAt: Date.now() });
+
+      const newSample = { ...existing, ...payload };
+
+      // Optimistic update
+      setSamples(prev => {
+        const newArr = [...prev];
+        newArr[existingIndex] = newSample;
+        return newArr;
+      });
+
+      // Update backend
+      setSynced(false);
+      const { error } = await supabase.from('samples').upsert(newSample);
+      if (error) {
+        console.error("Error updating sample:", error);
+      }
+      setSynced(true);
     }
   };
 
@@ -98,11 +144,8 @@ function App() {
           <h1>ML Hydrogel Tracker</h1>
         </div>
         <div className="header-actions">
-          <div className="status-badge" title="Peers connected">
-            <Users size={16} /> {connectedPeers}
-          </div>
           <div className={`status-badge ${synced ? 'synced' : 'syncing'}`}>
-            <Activity size={16} /> {synced ? 'Synced' : 'Syncing...'}
+            <Activity size={16} /> {synced ? 'Saved' : 'Saving...'}
           </div>
           <button className="btn btn-secondary" onClick={() => setShowProtocol(true)}>
             View Protocol
