@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from './store';
-import { INITIAL_DATA, type Sample, type Assignee } from './data';
+import { type Sample, type Assignee } from './data';
 import { Dashboard } from './components/Dashboard';
 import { DataTable } from './components/DataTable';
 import { ProtocolPanel } from './components/ProtocolPanel';
