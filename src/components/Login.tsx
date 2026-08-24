@@ -59,7 +59,7 @@ export function Login({ onLogin }: LoginProps) {
               type="text" 
               value={username}
               onChange={e => setUsername(e.target.value)}
-              placeholder="e.g. shubhashish"
+              placeholder="e.g. subhasish"
               required
             />
           </div>

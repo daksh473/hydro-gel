@@ -8,7 +8,7 @@ interface SampleDetailModalProps {
   onUpdate: (updates: Partial<Sample>) => void;
 }
 
-const TEAM: Assignee[] = ['Shubhashish', 'Daksh', 'Swayam Shree', 'Suman', 'Nuzail', 'Unassigned'];
+const TEAM: Assignee[] = ['Subhasish', 'Daksh', 'Swayam Shree', 'Suman', 'Nuzail', 'Unassigned'];
 
 export function SampleDetailModal({ sample, onClose, onUpdate }: SampleDetailModalProps) {
   const [localSample, setLocalSample] = useState<Sample>({ ...sample });

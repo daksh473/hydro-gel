@@ -19,7 +19,7 @@ export const STATUSES: Status[] = [
   'Done'
 ];
 
-export type Assignee = 'Shubhashish' | 'Daksh' | 'Swayam Shree' | 'Suman' | 'Nuzail' | 'Unassigned';
+export type Assignee = 'Subhasish' | 'Daksh' | 'Swayam Shree' | 'Suman' | 'Nuzail' | 'Unassigned';
 
 export interface Sample {
   id: string; // Will be same as slNo as string, for Yjs map keys

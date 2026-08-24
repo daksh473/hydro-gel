@@ -5,7 +5,7 @@ interface DashboardProps {
   samples: Sample[];
 }
 
-const TEAM = ['Shubhashish', 'Daksh', 'Swayam Shree', 'Suman', 'Nuzail'];
+const TEAM = ['Subhasish', 'Daksh', 'Swayam Shree', 'Suman', 'Nuzail'];
 
 export function Dashboard({ samples }: DashboardProps) {
   const completed = samples.filter(s => s.status === 'Done').length;

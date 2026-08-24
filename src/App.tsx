@@ -103,7 +103,7 @@ function App() {
         (!updates.assignedTo || updates.assignedTo === 'Unassigned')
       ) {
         // Map lowercase username to proper casing for Assignee if possible
-        const properName = ['Shubhashish', 'Daksh', 'Swayam Shree', 'Suman', 'Nuzail'].find(n => n.toLowerCase().replace(/\s+/g, '') === currentUser) as Assignee;
+        const properName = ['Subhasish', 'Daksh', 'Swayam Shree', 'Suman', 'Nuzail'].find(n => n.toLowerCase().replace(/\s+/g, '') === currentUser) as Assignee;
         if (properName) {
           payload.assignedTo = properName;
         }

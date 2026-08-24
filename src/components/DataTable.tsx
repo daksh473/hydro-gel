@@ -8,7 +8,7 @@ interface DataTableProps {
   onUpdateSample: (id: string, updates: Partial<Sample>) => void;
 }
 
-const TEAM: Assignee[] = ['Shubhashish', 'Daksh', 'Swayam Shree', 'Suman', 'Nuzail', 'Unassigned'];
+const TEAM: Assignee[] = ['Subhasish', 'Daksh', 'Swayam Shree', 'Suman', 'Nuzail', 'Unassigned'];
 
 export function DataTable({ samples, onRowClick, onUpdateSample }: DataTableProps) {
   const [filterAssignee, setFilterAssignee] = useState<Assignee | 'All'>('All');
