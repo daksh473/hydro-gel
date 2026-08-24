@@ -16,6 +16,7 @@ function App() {
   const [selectedSampleId, setSelectedSampleId] = useState<string | null>(null);
   const [showProtocol, setShowProtocol] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   // We use a ref to avoid stale closures in the realtime subscription
   const samplesRef = useRef<Sample[]>([]);
@@ -28,23 +29,23 @@ function App() {
     // Initial load
     const loadData = async () => {
       setSynced(false);
+      setFetchError(null);
       const { data, error } = await supabase.from('samples').select('*').order('slNo', { ascending: true });
       
       if (error) {
         console.error('Error fetching samples:', error);
+        setFetchError(`Failed to load samples: ${error.message} (Code: ${error.code})`);
         setSynced(true);
         return;
       }
 
-      if (data && data.length === 0) {
-        // Initialize with default 48 samples if table is empty
-        const { error: insertError } = await supabase.from('samples').insert(INITIAL_DATA);
-        if (!insertError) {
-          setSamples(INITIAL_DATA);
-        }
-      } else if (data) {
-        setSamples(data as Sample[]);
+      if (!data || data.length === 0) {
+        setFetchError(`Loaded 0 rows from table 'samples'. Did you run the SQL seed script in your Supabase dashboard?`);
+        setSynced(true);
+        return;
       }
+
+      setSamples(data as Sample[]);
       setSynced(true);
     };
 
@@ -161,6 +162,12 @@ function App() {
           </div>
         </div>
       </header>
+
+      {fetchError && (
+        <div style={{ background: '#ff3b30', color: 'white', padding: '16px', textAlign: 'center', fontWeight: 'bold' }}>
+          {fetchError}
+        </div>
+      )}
 
       <main className="app-content">
         <Dashboard samples={samples} />
